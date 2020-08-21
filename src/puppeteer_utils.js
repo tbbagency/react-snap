@@ -253,6 +253,7 @@ const crawl = async (opt) => {
         const tracker = createTracker(page);
         try {
           await page.goto(pageUrl, { waitUntil: "networkidle0" });
+          await page.emulateMediaType("screen");
         } catch (e) {
           e.message = augmentTimeoutError(e.message, tracker);
           throw e;
