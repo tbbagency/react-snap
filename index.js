@@ -117,7 +117,8 @@ const defaults = userOptions => {
   if (
     options.saveAs !== "html" &&
     options.saveAs !== "png" &&
-    options.saveAs !== "jpeg"
+    options.saveAs !== "jpeg" &&
+    options.saveAs !== "pdf"
   ) {
     console.log("🔥  saveAs supported values are html, png, and jpeg");
     exit = true;
@@ -645,6 +646,22 @@ const saveAsJpeg = ({ page, filePath, options, route }) => {
   return page.screenshot({ path: screenshotPath });
 };
 
+const saveAsPDF = ({ page, filePath, options, route }) => {
+  mkdirp.sync(path.dirname(filePath));
+  let screenshotPath;
+  if (route.endsWith(".html")) {
+    screenshotPath = filePath.replace(/\.html$/, ".pdf");
+  } else if (route === "/") {
+    screenshotPath = `${filePath}index.pdf`;
+  } else {
+    screenshotPath = `${filePath.replace(/\/$/, "")}.pdf`;
+  }
+  return page.pdf({ path: screenshotPath, printBackground: true, // print background colors
+    width: "1400px", // match the css width and height we set for our PDF,
+    height: "800px",
+    preferCSSPageSize: false });
+};
+
 const run = async (userOptions, { fs } = { fs: nativeFs }) => {
   let options;
   try {
@@ -848,6 +865,8 @@ const run = async (userOptions, { fs } = { fs: nativeFs }) => {
         await saveAsPng({ page, filePath, options, route, fs });
       } else if (options.saveAs === "jpeg") {
         await saveAsJpeg({ page, filePath, options, route, fs });
+      } else if (options.saveAs === "pdf") {
+        await saveAsPDF({ page, filePath, options, route, fs });
       }
     },
     onEnd: () => {
